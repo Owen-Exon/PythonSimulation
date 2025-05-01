@@ -50,3 +50,6 @@ class singleDirectionForceRegion:
         self.radius = radius
         self.position = position
         self.force = force
+        
+def inForceRegion(object,forceRegion) -> bool:
+    return distanceBetween2Vector2D(object.position,forceRegion.position) <= forceRegion.radius
