@@ -1,7 +1,29 @@
 from MathPlus import *
-from graphics import *
 
-# Size mass position force
+class graphicArrow():
+    
+    def __init__(self, position:Vector2D,direction:Vector2D):
+        arrowVector = 0.25*direction
+        endPoint = position+arrowVector
+        arrowBody = Line(position.point(),endPoint.point())
+        arrowL = Line(endPoint.point(),(endPoint + Vector2D(Angle(160,"Deg")+arrowVector.arg(),0.5)).point())
+        arrowR = Line(endPoint.point(),(endPoint + Vector2D(Angle(-160,"Deg")+arrowVector.arg(),0.5)).point())
+        
+        self.arrowBody = arrowBody
+        self.arrowL = arrowL
+        self.arrowR = arrowR
+    
+    def draw(self,win):
+        self.arrowBody.draw(win)
+        self.arrowL.draw(win)
+        self.arrowR.draw(win)
+        
+    def undraw(self):
+        self.arrowBody.undraw()
+        self.arrowL.undraw()
+        self.arrowR.undraw()
+
+
 
 class pointParticle:
     
@@ -11,8 +33,7 @@ class pointParticle:
         self.mass = mass
         self.position = position
         self.velocity = initialVelocity
-        
-        self.displayPoint = Circle(Point(position.x,position.y),0.1) 
+        self.displayPoint = Circle(position.point(),0.1)
         
     def tick(self,tickTime:float, resultantForce:Vector2D):
         acceleration = resultantForce / self.mass
