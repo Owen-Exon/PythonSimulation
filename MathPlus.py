@@ -47,7 +47,7 @@ class Angle:
         if angleType == "Deg":
             self.Angle = angle
         elif angleType == "Rad":
-            self.Angle = (angle)*180/math.pi
+            self.Angle = (angle)*180/pi
     
     def degrees(self) -> float:
         """Returns the angle in degrees"""
@@ -55,7 +55,7 @@ class Angle:
 
     def rad(self) -> float:
         """Returns the angle in rad"""
-        return (self.Angle)*math.pi/180
+        return (self.Angle)*pi/180
     
     def __str__(self):
         return f"{self.rad()} rad"
