@@ -116,11 +116,11 @@ class Vector2D:
         """Returns the vector as a 2 item list"""
         return [self.x,self.y]
     
-    def length(self) -> float:
+    def mod(self) -> float:
         """Returns the length of the vector"""
         return math.sqrt((self.x**2)+(self.y**2))
     
-    def angle(self) -> Angle:
+    def arg(self) -> Angle:
         
         """Returns the angle of the vector from the +ve x axis"""
         
@@ -160,3 +160,9 @@ def dotProduct(v1:Vector2D,v2:Vector2D) -> float|int:
         return v1.x * v2.x + v1.y * v2.y
     else:
         raise ValueError("Dot product must be done on two vectors")
+
+
+
+def distanceBetween2Vector2D(v1:Vector2D,v2:Vector2D) -> float|int:
+    if isinstance(v1,Vector2D) & isinstance(v2,Vector2D):
+        return (v2 - v1).mod()
