@@ -1,5 +1,6 @@
 import math
 from math import pi
+from graphics import *
 
 def MathTypeErrorText(operandType:str,object1,object2):
     return f"unsupported operand type(s) for {operandType}: '{type(object1).__name__}' and '{type(object2).__name__}'"
@@ -152,6 +153,9 @@ class Vector2D:
             return Vector2D(self.x / other, self.y / other)
         else:
             raise ValueError(MathTypeErrorText("/",self,other))
+        
+    def point(self):
+        return Point(self.x,self.y)
 
 
 
