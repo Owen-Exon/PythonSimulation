@@ -154,6 +154,9 @@ class Vector2D:
         else:
             raise ValueError(MathTypeErrorText("/",self,other))
         
+    def unitVector(self):
+        return self/self.mod() 
+        
     def point(self):
         return Point(self.x,self.y)
 
