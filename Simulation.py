@@ -43,10 +43,10 @@ class pointParticle:
         self.mass = mass
         self.position = position
         self.velocity = initialVelocity
-        self.display = generateDisplay(position,0.1,color_rgb(0,0,0),color_rgb(0,0,0))
+        self.display = generateDisplay(position,.1,color_rgb(0,0,0),color_rgb(0,0,0))
         
-    def tick(self,tickTime:float, resultantForce:Vector2D):
-        acceleration = resultantForce / self.mass
+    def tick(self,tickTime:float, resultantForce:Vector2D=Vector2D(0,0), acceleration:Vector2D=Vector2D(0,0)):
+        acceleration += resultantForce / self.mass
         self.velocity += tickTime * acceleration
         dPosition = tickTime * self.velocity
         self.position += dPosition
@@ -56,12 +56,32 @@ class singleDirectionForceRegion:
     
     """This is a force region which applies a force in a single direction in a circle around a point"""
     
-    def __init__(self, radius:float|int, position:Vector2D, force:Vector2D):
+    def __init__(self, radius:float|int, position:Vector2D, effect:Vector2D, type:str="Force"):
         self.radius = radius
         self.position = position
-        self.force = force
+        self.effect = effect
+        self.type = type
         self.display = generateDisplay(position,radius,color_rgb(255,0,0))
+
+class radialForceRegion:
+    
+    """This is a force region which applies a force around its centre"""
+    
+    def __init__(self, position:Vector2D, strength:float|int, atDistance:float|int, type:str="Acceleration"):
         
+        """Inits a radial force region
+        
+        Args:
+            radius (float|int): radius of the force region
+            position (Vector2D): Position of the force region
+            strength
+        """
+        
+        self.position = position
+        self.type = type
+        self.strengthConstant = strength*atDistance**2
+        self.display = generateDisplay(position,1,color_rgb(255,0,0))
+    
 def isInForceRegion(object,forceRegion) -> bool:
     return distanceBetween2Vector2D(object.position,forceRegion.position) <= forceRegion.radius
 
@@ -83,11 +103,26 @@ class universe:
         self.frame += 1
         for actor in self.actors:
             if isinstance(actor,pointParticle):
-                resultantForce = self.gravity*actor.mass
+                resultantAcceleration = self.gravity
+                resultantForce = Vector2D(0,0)
                 for effector in self.actors:
                     if isinstance(effector,singleDirectionForceRegion) and isInForceRegion(actor,effector):
-                        resultantForce += effector.force
-                actor.tick(tickTime,resultantForce)
+                        match effector.type:
+                            case "Force":
+                                resultantForce += effector.effect
+                            case "Acceleration":
+                                resultantAcceleration += effector.effect
+                    elif isinstance(effector, radialForceRegion):
+                        distance = distanceBetween2Vector2D(actor.position,effector.position)
+                        direction = (effector.position - actor.position).unitVector()
+                        effect = direction * (effector.strengthConstant/(distance**2))
+                        match effector.type:
+                            case "Force":
+                                resultantForce += effect
+                            case "Acceleration":
+                                resultantAcceleration += effect
+                            
+                actor.tick(tickTime,resultantForce,resultantAcceleration)
         #IMAGE if self.frame % 3 == 0:
         #IMAGE     self.graphicsWindow.postscript(file="frames/tempImage.eps", colormode='color')
         #IMAGE     img = NewImage.open("frames/tempImage.eps")
