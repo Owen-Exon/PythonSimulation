@@ -39,11 +39,11 @@ class pointParticle:
     
     """A particle with size of 0, a mass, and movement vectors, it is affected by force regions"""
     # Add Colour and Display to init
-    def __init__(self, mass:float|int, position:Vector2D, initialVelocity:Vector2D):
+    def __init__(self, mass:float|int, position:Vector2D, initialVelocity:Vector2D,displayColour,displayRadius:float|int):
         self.mass = mass
         self.position = position
         self.velocity = initialVelocity
-        self.display = generateDisplay(position,.1,color_rgb(0,0,0),color_rgb(0,0,0))
+        self.display = generateDisplay(position,displayRadius,displayColour,displayColour)
         
     def tick(self,tickTime:float, resultantForce:Vector2D=Vector2D(0,0), acceleration:Vector2D=Vector2D(0,0)):
         acceleration += resultantForce / self.mass
@@ -67,7 +67,7 @@ class radialForceRegion:
     
     """This is a force region which applies a force around its centre"""
     
-    def __init__(self, position:Vector2D, strength:float|int, atDistance:float|int, type:str="Acceleration"):
+    def __init__(self, position:Vector2D, strength:float|int, atDistance:float|int, displayRadius,displayColour, type:str="Acceleration"):
         
         """Inits a radial force region
         
@@ -80,10 +80,26 @@ class radialForceRegion:
         self.position = position
         self.type = type
         self.strengthConstant = strength*atDistance**2
-        self.display = generateDisplay(position,1,color_rgb(255,0,0))
+        self.display = generateDisplay(position,displayRadius,displayColour,displayColour)
     
 def isInForceRegion(object,forceRegion) -> bool:
     return distanceBetween2Vector2D(object.position,forceRegion.position) <= forceRegion.radius
+
+class radialForcePointParticle:
+    def __init__(self, mass:float|int, position:Vector2D, initialVelocity:Vector2D, strength:float|int, atDistance:float|int,displayColour,displayRadius:float|int,type:str="Acceleration"):
+        self.mass = mass
+        self.position = position
+        self.velocity = initialVelocity
+        self.display = generateDisplay(position,displayRadius,displayColour,displayColour)
+        self.type = type
+        self.strengthConstant = strength*atDistance**2
+        
+    def tick(self,tickTime:float, resultantForce:Vector2D=Vector2D(0,0), acceleration:Vector2D=Vector2D(0,0)):
+        acceleration += resultantForce / self.mass
+        self.velocity += tickTime * acceleration
+        dPosition = tickTime * self.velocity
+        self.position += dPosition
+        self.display.move(dPosition.x,dPosition.y)
 
 class universe:
     
@@ -99,20 +115,21 @@ class universe:
             self.actors.append(actor)
             actor.display.draw(self.graphicsWindow)
             
-    def tick(self,tickTime):
+    def tick(self,tickTime,sleepTime):
         self.frame += 1
         for actor in self.actors:
-            if isinstance(actor,pointParticle):
+            if isinstance(actor,pointParticle|radialForcePointParticle):
                 resultantAcceleration = self.gravity
                 resultantForce = Vector2D(0,0)
                 for effector in self.actors:
+                    if actor == effector: continue
                     if isinstance(effector,singleDirectionForceRegion) and isInForceRegion(actor,effector):
                         match effector.type:
                             case "Force":
                                 resultantForce += effector.effect
                             case "Acceleration":
                                 resultantAcceleration += effector.effect
-                    elif isinstance(effector, radialForceRegion):
+                    elif isinstance(effector, radialForceRegion|radialForcePointParticle):
                         distance = distanceBetween2Vector2D(actor.position,effector.position)
                         direction = (effector.position - actor.position).unitVector()
                         effect = direction * (effector.strengthConstant/(distance**2))
@@ -127,4 +144,4 @@ class universe:
         #IMAGE     self.graphicsWindow.postscript(file="frames/tempImage.eps", colormode='color')
         #IMAGE     img = NewImage.open("frames/tempImage.eps")
         #IMAGE     img.save(f"frames/Time{startTime}Sim{self.frame}.bmp", "bmp")
-        time.sleep(tickTime)
+        time.sleep(sleepTime)
