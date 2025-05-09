@@ -88,8 +88,8 @@ class universe:
             self.actors.append(actor)
             actor.display.draw(self.graphicsWindow)
             
-    def tick(self,tickTime,sleepTime):
-        startTime = time.time() 
+    def tick(self):
+        startTime = time.time()
         self.frame += 1
         shuffle(self.actors)
         for actor in self.actors:
@@ -113,12 +113,18 @@ class universe:
                             case "Acceleration":
                                 resultantAcceleration += effect
 
-                actor.tick(tickTime,resultantForce,resultantAcceleration)
+                actor.tick(self.lastTime,resultantForce,resultantAcceleration)
         #IMAGE if self.frame % 3 == 0:
         #IMAGE     self.graphicsWindow.postscript(file="frames/tempImage.eps", colormode='color')
         #IMAGE     img = NewImage.open("frames/tempImage.eps")
         #IMAGE     img.save(f"frames/Time{startTime}Sim{self.frame}.bmp", "bmp")
         self.graphicsWindow.flush()
-        timeDiff = time.time() - startTime
-        if timeDiff < sleepTime:
-            time.sleep(sleepTime - timeDiff)
+        self.lastTime = (time.time() - startTime) * self.timeMultiplier
+        
+    def run(self):
+        self.graphicsWindow.getMouse()
+        done = False
+        while not done:
+            self.tick()
+            if self.graphicsWindow.checkMouse(): done = True
+        self.graphicsWindow.close()
