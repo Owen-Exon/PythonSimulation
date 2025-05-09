@@ -76,12 +76,15 @@ def isInForceRegion(object,forceRegion) -> bool:
 
 class universe:
     
-    def __init__(self,name:str,resolution:list,coordLimits:list,gravity:Vector2D):
+    def __init__(self,name:str,resolution:list,coordLimits:list,gravity:Vector2D,timeMultiplier:float|int,slowTimeMultiplier=None):
         self.graphicsWindow = GraphWin(name,*resolution,autoflush=False)
         self.graphicsWindow.setCoords(*coordLimits)
         self.gravity = gravity
         self.actors = []
         self.frame = 0
+        self.lastTime = 0.01*timeMultiplier
+        self.timeMultiplier = timeMultiplier
+        self.otherTimeMultiplier = slowTimeMultiplier
     
     def addObjects(self,*actors):
         for actor in actors:
@@ -127,4 +130,8 @@ class universe:
         while not done:
             self.tick()
             if self.graphicsWindow.checkMouse(): done = True
+            if self.graphicsWindow.checkKey() == "s" and self.otherTimeMultiplier != None:
+                tempTime = self.timeMultiplier
+                self.timeMultiplier = self.otherTimeMultiplier
+                self.otherTimeMultiplier = tempTime
         self.graphicsWindow.close()
