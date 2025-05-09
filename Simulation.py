@@ -2,6 +2,7 @@ from MathPlus import *
 #IMAGE from PIL import Image as NewImage
 import time
 from random import shuffle
+import time
 #IMAGE startTime = int(time.time())
 
 class graphicArrow():
@@ -76,7 +77,7 @@ def isInForceRegion(object,forceRegion) -> bool:
 class universe:
     
     def __init__(self,name:str,resolution:list,coordLimits:list,gravity:Vector2D):
-        self.graphicsWindow = GraphWin(name,*resolution)
+        self.graphicsWindow = GraphWin(name,*resolution,autoflush=False)
         self.graphicsWindow.setCoords(*coordLimits)
         self.gravity = gravity
         self.actors = []
@@ -88,6 +89,7 @@ class universe:
             actor.display.draw(self.graphicsWindow)
             
     def tick(self,tickTime,sleepTime):
+        startTime = time.time() 
         self.frame += 1
         shuffle(self.actors)
         for actor in self.actors:
@@ -116,4 +118,7 @@ class universe:
         #IMAGE     self.graphicsWindow.postscript(file="frames/tempImage.eps", colormode='color')
         #IMAGE     img = NewImage.open("frames/tempImage.eps")
         #IMAGE     img.save(f"frames/Time{startTime}Sim{self.frame}.bmp", "bmp")
-        time.sleep(sleepTime)
+        self.graphicsWindow.flush()
+        timeDiff = time.time() - startTime
+        if timeDiff < sleepTime:
+            time.sleep(sleepTime - timeDiff)
