@@ -40,7 +40,7 @@ def generateDisplay(position:Vector2D,radius:float|int,configs:dict):
     return tempCircle
 
 class PhysicsObject:
-    def __init__(self,position:Vector2D, radius:float|int, display:dict):
+    def __init__(self,position:Vector2D, radius:float|int, display:dict={"Fill":color_rgb(0,0,0)}):
         self.position = position
         self.isMovable = False
         self.hasForce = False
@@ -73,6 +73,43 @@ class PhysicsObject:
 def isInForceRegion(object,forceRegion) -> bool:
     return distanceBetween2Vector2D(object.position,forceRegion.position) <= forceRegion.forceRadius
 
+def dotProduct(a:Vector2D,b:Vector2D):
+    return (a.x * b.x) + (a.y * b.y)
+
+def solveCollision(object1:PhysicsObject, object2:PhysicsObject):
+    if object1.isMovable:
+        v1 = object1.velocity
+        m1 = object1.mass
+    else:
+        v1 = Vector2D(0,0)
+        m1 = 9999999999999999999999999999999999999999999999999999999999999999999999999999999
+    if object2.isMovable:
+        v2 = object2.velocity
+        m2 = object2.mass
+    else:
+        v2 = Vector2D(0,0)
+        m2 = 9999999999999999999999999999999999999999999999999999999999999999999999999999999
+    
+    p1 = object1.position
+    p2 = object2.position
+
+    normalUnit = (p2-p1).unitVector()
+    tangentUnit = Vector2D(-normalUnit.y,normalUnit.x)
+    v1Normal = dotProduct(v1,normalUnit)
+    v2Normal = dotProduct(v2,normalUnit)
+    v1Tangent = dotProduct(v1,tangentUnit)
+    v2Tangent = dotProduct(v2,tangentUnit)
+    
+    v1NormalDash = (v1Normal * (m1 - m2) + 2 * m2 * v2Normal) / (m1 + m2)
+    v2NormalDash = (v2Normal * (m2 - m1) + 2 * m1 * v1Normal) / (m1 + m2)
+    v1TangentDash = v1Tangent
+    v2TangentDash = v2Tangent
+    
+    v1Dash = v1NormalDash * normalUnit + v1TangentDash * tangentUnit
+    v2Dash = v2NormalDash * normalUnit + v2TangentDash * tangentUnit
+    
+    return [v1Dash,v2Dash]
+
 class universe:
     
     def __init__(self,name:str,resolution:list,coordLimits:list,gravity:Vector2D,timeMultiplier:float|int,slowTimeMultiplier=None):
@@ -100,20 +137,25 @@ class universe:
                 resultantForce = Vector2D(0,0)
                 for effector in self.actors:
                     if actor == effector:continue
-                    if isinstance(effector,PhysicsObject) and effector.hasForce:
-                        effect = Vector2D(0,0)
-                        match effector.forceType.split(":")[0]:
-                            case "radial":
-                                distance = distanceBetween2Vector2D(actor.position,effector.position)
-                                direction = (effector.position - actor.position).unitVector()
-                                effect = direction * (effector.strengthConstant/(distance**2))
-                            case "singleDirection":
-                                if isInForceRegion(actor,effector): effect = effector.effect
-                        match effector.forceType.split(":")[1]:
-                            case "Force":
-                                resultantForce += effect
-                            case "Acceleration":
-                                resultantAcceleration += effect
+                    if isinstance(effector,PhysicsObject):
+                        if (actor.position - effector.position).mod() <= (actor.radius + effector.radius):
+                            velocities = solveCollision(actor , effector)
+                            actor.velocity = velocities[0]
+                            effector.velocity = velocities[1]
+                        if effector.hasForce:
+                            effect = Vector2D(0,0)
+                            match effector.forceType.split(":")[0]:
+                                case "radial":
+                                    distance = distanceBetween2Vector2D(actor.position,effector.position)
+                                    direction = (effector.position - actor.position).unitVector()
+                                    effect = direction * (effector.strengthConstant/(distance**2))
+                                case "singleDirection":
+                                    if isInForceRegion(actor,effector): effect = effector.effect
+                            match effector.forceType.split(":")[1]:
+                                case "Force":
+                                    resultantForce += effect
+                                case "Acceleration":
+                                    resultantAcceleration += effect
 
                 actor.tick(self.lastTime,resultantForce,resultantAcceleration)
         #IMAGE if self.frame % 3 == 0:
