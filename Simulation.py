@@ -2,6 +2,7 @@ from MathPlus import *
 #IMAGE from PIL import Image as NewImage
 import time
 from random import shuffle
+
 #IMAGE imageStartTime = int(time.time())
 
 class graphicArrow():
@@ -40,12 +41,13 @@ def generateDisplay(position:Vector2D,radius:float|int,configs:dict):
     return tempCircle
 
 class PhysicsObject:
-    def __init__(self,position:Vector2D, radius:float|int, display:dict={"Fill":color_rgb(0,0,0)}):
+    def __init__(self,position:Vector2D, radius:float|int, display:dict={"Fill":color_rgb(0,0,0)},isPermeable:bool=False):
         self.position = position
         self.isMovable = False
         self.hasForce = False
         self.radius = radius
         self.display = generateDisplay(position, radius, display)
+        self.isPermeable = isPermeable
     
     def setParticle(self, mass:int|float, initialVelocity:Vector2D):
         self.isMovable = True
@@ -67,8 +69,16 @@ class PhysicsObject:
         acceleration += resultantForce / self.mass
         self.velocity += tickTime * acceleration
         dPosition = tickTime * self.velocity
-        self.position += dPosition
-        self.display.move(dPosition.x,dPosition.y)
+        self.move(dPosition)
+        
+    
+    def setPosition(self, vector:Vector2D):
+        self.display.move(vector.x-self.position.x,vector.y-self.position.y)
+        self.position = vector
+        
+    def move(self,vector:Vector2D):
+        self.position += vector
+        self.display.move(vector.x,vector.y)
     
 def isInForceRegion(object,forceRegion) -> bool:
     return distanceBetween2Vector2D(object.position,forceRegion.position) <= forceRegion.forceRadius
@@ -77,12 +87,14 @@ def dotProduct(a:Vector2D,b:Vector2D):
     return (a.x * b.x) + (a.y * b.y)
 
 def solveCollision(object1:PhysicsObject, object2:PhysicsObject):
-    if object1.isMovable:
-        v1 = object1.velocity
-        m1 = object1.mass
-    else:
-        v1 = Vector2D(0,0)
-        m1 = 9999999999999999999999999999999999999999999999999999999999999999999999999999999
+    if not object1.isMovable:
+        raise ValueError("Object1 must be moveable")
+    if not object1.isMovable and not object2.isMovable:
+        raise ValueError("At least one object must be moveable")
+    
+    v1 = object1.velocity
+    m1 = object1.mass
+    
     if object2.isMovable:
         v2 = object2.velocity
         m2 = object2.mass
@@ -108,7 +120,11 @@ def solveCollision(object1:PhysicsObject, object2:PhysicsObject):
     v1Dash = v1NormalDash * normalUnit + v1TangentDash * tangentUnit
     v2Dash = v2NormalDash * normalUnit + v2TangentDash * tangentUnit
     
-    return [v1Dash,v2Dash]
+    object1.velocity = v1Dash
+    if object2.isMovable:
+        object2.velocity = v2Dash
+    else:
+        object1.setPosition(p2-((object2.radius + object1.radius)*normalUnit))
 
 class universe:
     
@@ -138,10 +154,8 @@ class universe:
                 for effector in self.actors:
                     if actor == effector:continue
                     if isinstance(effector,PhysicsObject):
-                        if (actor.position - effector.position).mod() <= (actor.radius + effector.radius):
-                            velocities = solveCollision(actor , effector)
-                            actor.velocity = velocities[0]
-                            effector.velocity = velocities[1]
+                        if distanceBetween2Vector2D(actor.position,effector.position) <= (actor.radius + effector.radius) and not actor.isPermeable and not effector.isPermeable: 
+                            solveCollision(actor,effector)
                         if effector.hasForce:
                             effect = Vector2D(0,0)
                             match effector.forceType.split(":")[0]:
