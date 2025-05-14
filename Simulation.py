@@ -1,4 +1,4 @@
-from SimulationPy.MathPlus import *
+from MathPlus import *
 #IMAGE from PIL import Image as NewImage
 import time
 from random import shuffle
