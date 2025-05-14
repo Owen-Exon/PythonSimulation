@@ -200,3 +200,4 @@ if __name__ == "__main__":
     p2.setParticle(4,Vector2D(-5,-5))
     
     World.addObjects(p1,p2)
+    World.run()
