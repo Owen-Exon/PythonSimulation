@@ -1,4 +1,4 @@
-from SimulationPy.Simulation import *
+from Simulation import *
 
 
 MainUniverse = universe("Test",[1000,1000],[-180000,-180000,180000,180000],Vector2D(0,0),1000,2000)

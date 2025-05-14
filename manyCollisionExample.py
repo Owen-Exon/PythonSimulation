@@ -1,4 +1,4 @@
-from SimulationPy.Simulation import *
+from Simulation import *
 
 World = universe("World",[1000,1000],[-10,-5,10,15],Vector2D(0,0),.5,0.1)
 
