@@ -126,9 +126,16 @@ def solveCollision(object1:PhysicsObject, object2:PhysicsObject):
     else:
         object1.setPosition(p2-((object2.radius + object1.radius)*normalUnit))
 
+def SimpleDragCalculator(Velocity:Vector2D,FluidDensity:float|int,radius:float|int,dragCoefficient):
+    VelocityMod = Velocity.mod()
+    DragMod = dragCoefficient*( ( FluidDensity * (VelocityMod ** 2) ) / 2) * (2*radius)
+    Drag = Vector2D(Velocity.arg()+Angle(pi),DragMod)
+    print(DragMod, "---",Drag)
+    return Drag
+
 class universe:
     
-    def __init__(self,name:str,resolution:list,coordLimits:list,gravity:Vector2D,timeMultiplier:float|int,slowTimeMultiplier=None):
+    def __init__(self,name:str,resolution:list,coordLimits:list,gravity:Vector2D,timeMultiplier:float|int,slowTimeMultiplier=None, airDensity:float|int=0):
         self.graphicsWindow = GraphWin(name,*resolution,autoflush=False)
         self.graphicsWindow.setCoords(*coordLimits)
         self.gravity = gravity
@@ -137,6 +144,7 @@ class universe:
         self.lastTime = 0.01*timeMultiplier
         self.timeMultiplier = timeMultiplier
         self.otherTimeMultiplier = slowTimeMultiplier
+        self.airDensity = airDensity
     
     def addObjects(self,*actors):
         for actor in actors:
@@ -170,6 +178,7 @@ class universe:
                                     resultantForce += effect
                                 case "Acceleration":
                                     resultantAcceleration += effect
+                if self.airDensity != 0: resultantForce += SimpleDragCalculator(actor.velocity,self.airDensity,actor.radius,1.2)
 
                 actor.tick(self.lastTime,resultantForce,resultantAcceleration)
         #IMAGE if self.frame % 3 == 0:
