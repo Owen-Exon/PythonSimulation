@@ -94,6 +94,8 @@ def solveCollision(object1:PhysicsObject, object2:PhysicsObject):
     
     v1 = object1.velocity
     m1 = object1.mass
+    r1 = object1.radius
+    r2 = object2.radius
     
     if object2.isMovable:
         v2 = object2.velocity
@@ -105,6 +107,7 @@ def solveCollision(object1:PhysicsObject, object2:PhysicsObject):
     p1 = object1.position
     p2 = object2.position
 
+    distance = abs(distanceBetween2Vector2D(p1,p2) - (r1 + r2))
     normalUnit = (p2-p1).unitVector()
     tangentUnit = Vector2D(-normalUnit.y,normalUnit.x)
     v1Normal = dotProduct(v1,normalUnit)
@@ -123,6 +126,9 @@ def solveCollision(object1:PhysicsObject, object2:PhysicsObject):
     object1.velocity = v1Dash
     if object2.isMovable:
         object2.velocity = v2Dash
+        object1.move(-1 * normalUnit*(distance/2))
+        object2.move(normalUnit*(distance/2))
+        
     else:
         object1.setPosition(p2-((object2.radius + object1.radius)*normalUnit))
 
