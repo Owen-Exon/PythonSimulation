@@ -41,14 +41,13 @@ def generateDisplay(position:Vector2D,radius:float|int,configs:dict):
     return tempCircle
 
 class PhysicsObject:
-    def __init__(self,position:Vector2D, radius:float|int, display:dict={"Fill":color_rgb(0,0,0)},isPermeable:bool=False,collisionEfficiency=1):
+    def __init__(self,position:Vector2D, radius:float|int, display:dict={"Fill":color_rgb(0,0,0)},isPermeable:bool=False):
         self.position = position
         self.isMovable = False
         self.hasForce = False
         self.radius = radius
         self.display = generateDisplay(position, radius, display)
         self.isPermeable = isPermeable
-        self.collisionEfficiency = collisionEfficiency
     
     def setParticle(self, mass:int|float, initialVelocity:Vector2D):
         self.isMovable = True
@@ -143,8 +142,10 @@ def SimpleDragCalculator(Velocity:Vector2D,FluidDensity:float|int,radius:float|i
 
 class universe:
     
-    def __init__(self,name:str,resolution:list,coordLimits:list,gravity:Vector2D,timeMultiplier:float|int,slowTimeMultiplier=None, airDensity:float|int=0,collisionEfficiency:float|int=1):
+    def __init__(self,name:str,resolution:list,coordLimits:list,gravity:Vector2D,timeMultiplier:float|int,slowTimeMultiplier=None, airDensity:float|int=0,collisionEfficiency:float|int=1, collideWithBounds:bool = False):
         self.graphicsWindow = GraphWin(name,*resolution,autoflush=False)
+        self.collideWithBounds = collideWithBounds
+        self.bounds = {"minX":coordLimits[0],"maxX":coordLimits[2],"minY":coordLimits[1],"maxY":coordLimits[3]}
         self.graphicsWindow.setCoords(*coordLimits)
         self.gravity = gravity
         self.actors = []
@@ -159,7 +160,7 @@ class universe:
         for actor in actors:
             self.actors.append(actor)
             actor.display.draw(self.graphicsWindow)
-            
+    
     def tick(self):
         startTime = time.time()
         self.frame += 1
@@ -188,7 +189,19 @@ class universe:
                                 case "Acceleration":
                                     resultantAcceleration += effect
                 if self.airDensity != 0: resultantForce += SimpleDragCalculator(actor.velocity,self.airDensity,actor.radius,1.2)
-
+                
+                diffXmin = actor.position.x - self.bounds["minX"]
+                diffXmax = actor.position.x - self.bounds["maxX"]
+                diffYmin = actor.position.y - self.bounds["minY"]
+                diffYmax = actor.position.y - self.bounds["maxY"]
+                                
+                if diffXmin <= actor.radius or -1 * diffXmax <= actor.radius:
+                    actor.velocity.x *= -1 * self.collisionEfficiency
+                    actor.move(Vector2D(min(diffXmin,diffXmax,key=abs),0))
+                if diffYmin <= actor.radius or -1 * diffYmax <= actor.radius:
+                    actor.velocity.y *= -1 * self.collisionEfficiency
+                    actor.move(Vector2D(0,min(diffYmin,diffYmax,key=abs)))
+                
                 actor.tick(self.lastTime,resultantForce,resultantAcceleration)
         #IMAGE if self.frame % 3 == 0:
         #IMAGE     self.graphicsWindow.postscript(file="frames/tempImage.eps", colormode='color')
