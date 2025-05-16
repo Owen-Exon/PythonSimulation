@@ -41,13 +41,14 @@ def generateDisplay(position:Vector2D,radius:float|int,configs:dict):
     return tempCircle
 
 class PhysicsObject:
-    def __init__(self,position:Vector2D, radius:float|int, display:dict={"Fill":color_rgb(0,0,0)},isPermeable:bool=False):
+    def __init__(self,position:Vector2D, radius:float|int, display:dict={"Fill":color_rgb(0,0,0)},isPermeable:bool=False,collisionEfficiency=1):
         self.position = position
         self.isMovable = False
         self.hasForce = False
         self.radius = radius
         self.display = generateDisplay(position, radius, display)
         self.isPermeable = isPermeable
+        self.collisionEfficiency = collisionEfficiency
     
     def setParticle(self, mass:int|float, initialVelocity:Vector2D):
         self.isMovable = True
@@ -86,11 +87,13 @@ def isInForceRegion(object,forceRegion) -> bool:
 def dotProduct(a:Vector2D,b:Vector2D):
     return (a.x * b.x) + (a.y * b.y)
 
-def solveCollision(object1:PhysicsObject, object2:PhysicsObject):
+def solveCollision(object1:PhysicsObject, object2:PhysicsObject,efficiency:float|int):
     if not object1.isMovable:
         raise ValueError("Object1 must be moveable")
     if not object1.isMovable and not object2.isMovable:
         raise ValueError("At least one object must be moveable")
+    if efficiency < 0 or efficiency > 1:
+        raise ValueError("Efficiency must be within the bounds 0 <= e <= 1")
     
     v1 = object1.velocity
     m1 = object1.mass
@@ -115,8 +118,8 @@ def solveCollision(object1:PhysicsObject, object2:PhysicsObject):
     v1Tangent = dotProduct(v1,tangentUnit)
     v2Tangent = dotProduct(v2,tangentUnit)
     
-    v1NormalDash = (v1Normal * (m1 - m2) + 2 * m2 * v2Normal) / (m1 + m2)
-    v2NormalDash = (v2Normal * (m2 - m1) + 2 * m1 * v1Normal) / (m1 + m2)
+    v1NormalDash = (v1Normal * (m1 - efficiency * m2) + (efficiency + 1) * m2 * v2Normal) / (m1 + m2)
+    v2NormalDash = (v2Normal * (m2 - efficiency * m1) + (efficiency + 1) * m1 * v1Normal) / (m1 + m2)
     v1TangentDash = v1Tangent
     v2TangentDash = v2Tangent
     
@@ -140,7 +143,7 @@ def SimpleDragCalculator(Velocity:Vector2D,FluidDensity:float|int,radius:float|i
 
 class universe:
     
-    def __init__(self,name:str,resolution:list,coordLimits:list,gravity:Vector2D,timeMultiplier:float|int,slowTimeMultiplier=None, airDensity:float|int=0):
+    def __init__(self,name:str,resolution:list,coordLimits:list,gravity:Vector2D,timeMultiplier:float|int,slowTimeMultiplier=None, airDensity:float|int=0,collisionEfficiency:float|int=1):
         self.graphicsWindow = GraphWin(name,*resolution,autoflush=False)
         self.graphicsWindow.setCoords(*coordLimits)
         self.gravity = gravity
@@ -150,6 +153,7 @@ class universe:
         self.timeMultiplier = timeMultiplier
         self.otherTimeMultiplier = slowTimeMultiplier
         self.airDensity = airDensity
+        self.collisionEfficiency = collisionEfficiency
     
     def addObjects(self,*actors):
         for actor in actors:
@@ -168,7 +172,7 @@ class universe:
                     if actor == effector:continue
                     if isinstance(effector,PhysicsObject):
                         if distanceBetween2Vector2D(actor.position,effector.position) <= (actor.radius + effector.radius) and not actor.isPermeable and not effector.isPermeable: 
-                            solveCollision(actor,effector)
+                            solveCollision(actor,effector,self.collisionEfficiency)
                         if effector.hasForce:
                             effect = Vector2D(0,0)
                             match effector.forceType.split(":")[0]:
