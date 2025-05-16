@@ -130,7 +130,6 @@ def SimpleDragCalculator(Velocity:Vector2D,FluidDensity:float|int,radius:float|i
     VelocityMod = Velocity.mod()
     DragMod = dragCoefficient*( ( FluidDensity * (VelocityMod ** 2) ) / 2) * (2*radius)
     Drag = Vector2D(Velocity.arg()+Angle(pi),DragMod)
-    print(DragMod, "---",Drag)
     return Drag
 
 class universe:
