@@ -190,17 +190,19 @@ class universe:
                                     resultantAcceleration += effect
                 if self.airDensity != 0: resultantForce += SimpleDragCalculator(actor.velocity,self.airDensity,actor.radius,1.2)
                 
-                diffXmin = actor.position.x - self.bounds["minX"]
-                diffXmax = actor.position.x - self.bounds["maxX"]
-                diffYmin = actor.position.y - self.bounds["minY"]
-                diffYmax = actor.position.y - self.bounds["maxY"]
-                                
-                if diffXmin <= actor.radius or -1 * diffXmax <= actor.radius:
-                    actor.velocity.x *= -1 * self.collisionEfficiency
-                    actor.move(Vector2D(min(diffXmin,diffXmax,key=abs),0))
-                if diffYmin <= actor.radius or -1 * diffYmax <= actor.radius:
-                    actor.velocity.y *= -1 * self.collisionEfficiency
-                    actor.move(Vector2D(0,min(diffYmin,diffYmax,key=abs)))
+                if self.collideWithBounds:
+                    
+                    diffXmin = actor.position.x - self.bounds["minX"]
+                    diffXmax = actor.position.x - self.bounds["maxX"]
+                    diffYmin = actor.position.y - self.bounds["minY"]
+                    diffYmax = actor.position.y - self.bounds["maxY"]
+                                    
+                    if min(diffXmin,-1* diffXmax) <= actor.radius:
+                        actor.velocity.x *= -1 * self.collisionEfficiency
+                        actor.move(Vector2D(min(diffXmin,diffXmax,key=abs),0))
+                    if min(diffYmin,-1* diffYmax) <= actor.radius:
+                        actor.velocity.y *= -1 * self.collisionEfficiency
+                        actor.move(Vector2D(0,min(diffYmin,diffYmax,key=abs)))
                 
                 actor.tick(self.lastTime,resultantForce,resultantAcceleration)
         #IMAGE if self.frame % 3 == 0:
