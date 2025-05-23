@@ -86,7 +86,7 @@ def isInForceRegion(object,forceRegion) -> bool:
 def dotProduct(a:Vector2D,b:Vector2D):
     return (a.x * b.x) + (a.y * b.y)
 
-def solveCollision(object1:PhysicsObject, object2:PhysicsObject,efficiency:float|int):
+def solveCollision(object1:PhysicsObject, object2:PhysicsObject,efficiency:float|int, frictionCoefficient:float|int):
     if not object1.isMovable:
         raise ValueError("Object1 must be moveable")
     if not object1.isMovable and not object2.isMovable:
@@ -119,8 +119,16 @@ def solveCollision(object1:PhysicsObject, object2:PhysicsObject,efficiency:float
     
     v1NormalDash = (v1Normal * (m1 - efficiency * m2) + (efficiency + 1) * m2 * v2Normal) / (m1 + m2)
     v2NormalDash = (v2Normal * (m2 - efficiency * m1) + (efficiency + 1) * m1 * v1Normal) / (m1 + m2)
-    v1TangentDash = v1Tangent
-    v2TangentDash = v2Tangent
+    
+    vRelT = v1Tangent - v2Tangent
+    sumInverseMass = (1/m1) + (1/m2)
+    effectiveMass = 1/sumInverseMass
+    Jn = (-1 * (1 + efficiency) * (vRelT))/(sumInverseMass)
+    Jt = -1 * min(frictionCoefficient * abs(Jn),effectiveMass) * sign(vRelT)
+    
+    
+    v1TangentDash = v1Tangent + (Jt / m1)
+    v2TangentDash = v2Tangent - (Jt / m2)
     
     v1Dash = v1NormalDash * normalUnit + v1TangentDash * tangentUnit
     v2Dash = v2NormalDash * normalUnit + v2TangentDash * tangentUnit
@@ -142,7 +150,7 @@ def SimpleDragCalculator(Velocity:Vector2D,FluidDensity:float|int,radius:float|i
 
 class universe:
     
-    def __init__(self,name:str,resolution:list,coordLimits:list,gravity:Vector2D,timeMultiplier:float|int,slowTimeMultiplier=None, airDensity:float|int=0,collisionEfficiency:float|int=1, collideWithBounds:bool = False):
+    def __init__(self,name:str,resolution:list,coordLimits:list,gravity:Vector2D,timeMultiplier:float|int,slowTimeMultiplier=None, airDensity:float|int=0,collisionEfficiency:float|int=1, collideWithBounds:bool = False, frictionCoefficient:float|int = 0.5):
         self.graphicsWindow = GraphWin(name,*resolution,autoflush=False)
         self.collideWithBounds = collideWithBounds
         self.bounds = {"minX":coordLimits[0],"maxX":coordLimits[2],"minY":coordLimits[1],"maxY":coordLimits[3]}
@@ -155,6 +163,7 @@ class universe:
         self.otherTimeMultiplier = slowTimeMultiplier
         self.airDensity = airDensity
         self.collisionEfficiency = collisionEfficiency
+        self.frictionCoefficient = frictionCoefficient
     
     def addObjects(self,*actors):
         for actor in actors:
@@ -173,7 +182,7 @@ class universe:
                     if actor == effector:continue
                     if isinstance(effector,PhysicsObject):
                         if distanceBetween2Vector2D(actor.position,effector.position) <= (actor.radius + effector.radius) and not actor.isPermeable and not effector.isPermeable: 
-                            solveCollision(actor,effector,self.collisionEfficiency)
+                            solveCollision(actor,effector,self.collisionEfficiency,self.frictionCoefficient)
                         if effector.hasForce:
                             effect = Vector2D(0,0)
                             match effector.forceType.split(":")[0]:
@@ -192,17 +201,14 @@ class universe:
                 
                 if self.collideWithBounds:
                     
-                    diffXmin = actor.position.x - self.bounds["minX"]
-                    diffXmax = actor.position.x - self.bounds["maxX"]
-                    diffYmin = actor.position.y - self.bounds["minY"]
-                    diffYmax = actor.position.y - self.bounds["maxY"]
-                                    
-                    if min(diffXmin,-1* diffXmax) <= actor.radius:
-                        actor.velocity.x *= -1 * self.collisionEfficiency
-                        actor.move(Vector2D(min(diffXmin,diffXmax,key=abs),0))
-                    if min(diffYmin,-1* diffYmax) <= actor.radius:
-                        actor.velocity.y *= -1 * self.collisionEfficiency
-                        actor.move(Vector2D(0,min(diffYmin,diffYmax,key=abs)))
+                    if actor.position.x - self.bounds["minX"] <= actor.radius:
+                        solveCollision(actor,PhysicsObject(Vector2D(self.bounds["minX"],actor.position.y),0.00000001),self.collisionEfficiency,self.frictionCoefficient)
+                    elif self.bounds["maxX"] - actor.position.x <= actor.radius:
+                        solveCollision(actor,PhysicsObject(Vector2D(self.bounds["maxX"],actor.position.y),0.00000001),self.collisionEfficiency,self.frictionCoefficient)
+                    if actor.position.y - self.bounds["minY"] <= actor.radius:
+                        solveCollision(actor,PhysicsObject(Vector2D(actor.position.x,self.bounds["minY"]),0.00000001),self.collisionEfficiency,self.frictionCoefficient)
+                    elif self.bounds["maxY"] - actor.position.y <= actor.radius:
+                        solveCollision(actor,PhysicsObject(Vector2D(actor.position.x,self.bounds["maxY"]),0.00000001),self.collisionEfficiency,self.frictionCoefficient)
                 
                 actor.tick(self.lastTime,resultantForce,resultantAcceleration)
         #IMAGE if self.frame % 3 == 0:

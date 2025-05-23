@@ -173,3 +173,7 @@ def dotProduct(v1:Vector2D,v2:Vector2D) -> float|int:
 def distanceBetween2Vector2D(v1:Vector2D,v2:Vector2D) -> float|int:
     if isinstance(v1,Vector2D) & isinstance(v2,Vector2D):
         return (v2 - v1).mod()
+    
+def sign(x:float|int):
+    if x == 0: return 0
+    else: return x / abs(x)
