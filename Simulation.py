@@ -172,9 +172,8 @@ class universe:
     
     def __init__(self,name:str,resolution:list,coordLimits:list,gravity:Vector2D,timeMultiplier:float|int,slowTimeMultiplier=None, airDensity:float|int=0,collisionEfficiency:float|int=1, collideWithBounds:bool = False, frictionCoefficient:float|int = 0.5):
         self.graphicsWindow = GraphWin(name,*resolution,autoflush=False)
-        self.collideWithBounds = collideWithBounds
-        self.bounds = {"minX":coordLimits[0],"maxX":coordLimits[2],"minY":coordLimits[1],"maxY":coordLimits[3]}
         self.graphicsWindow.setCoords(*coordLimits)
+
         self.gravity = gravity
         self.actors = []
         self.frame = 0
@@ -184,6 +183,9 @@ class universe:
         self.airDensity = airDensity
         self.collisionEfficiency = collisionEfficiency
         self.frictionCoefficient = frictionCoefficient
+        
+        if collideWithBounds:
+            self.addObjects(*lineSeries([Vector2D(coordLimits[0],coordLimits[1]),Vector2D(coordLimits[2],coordLimits[1]),Vector2D(coordLimits[2],coordLimits[3]),Vector2D(coordLimits[0],coordLimits[3]),Vector2D(coordLimits[0],coordLimits[1])]))
     
     def addObjects(self,*actors):
         for actor in actors:
@@ -231,18 +233,6 @@ class universe:
                                 solveCollision(actor,PhysicsObject(pointOfCollision2 + Vector2D(angle2,1),1),self.collisionEfficiency,self.frictionCoefficient)
                         
                 if self.airDensity != 0: resultantForce += SimpleDragCalculator(actor.velocity,self.airDensity,actor.radius,1.2)
-                
-                if self.collideWithBounds:
-                    
-                    if actor.position.x - self.bounds["minX"] <= actor.radius:
-                        solveCollision(actor,PhysicsObject(Vector2D(self.bounds["minX"]-1,actor.position.y),1),self.collisionEfficiency,self.frictionCoefficient)
-                    elif self.bounds["maxX"] - actor.position.x <= actor.radius:
-                        solveCollision(actor,PhysicsObject(Vector2D(self.bounds["maxX"]+1,actor.position.y),1),self.collisionEfficiency,self.frictionCoefficient)
-                    if actor.position.y - self.bounds["minY"] <= actor.radius:
-                        solveCollision(actor,PhysicsObject(Vector2D(actor.position.x,self.bounds["minY"]-1),1),self.collisionEfficiency,self.frictionCoefficient)
-                    elif self.bounds["maxY"] - actor.position.y <= actor.radius:
-                        solveCollision(actor,PhysicsObject(Vector2D(actor.position.x,self.bounds["maxY"]+1),1),self.collisionEfficiency,self.frictionCoefficient)
-                
                 actor.tick(self.lastTime,resultantForce,resultantAcceleration)
         #IMAGE if self.frame % 3 == 0:
         #IMAGE     self.graphicsWindow.postscript(file="frames/tempImage.eps", colormode='color')
