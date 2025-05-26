@@ -177,3 +177,25 @@ def distanceBetween2Vector2D(v1:Vector2D,v2:Vector2D) -> float|int:
 def sign(x:float|int):
     if x == 0: return 0
     else: return x / abs(x)
+    
+def isBetween(value,bound1,bound2):
+    if value == bound1 or value == bound2:
+        return True
+    elif bound1 == bound2:
+        return False
+    
+    if bound1 < bound2:
+        low = bound1
+        high = bound2
+    else:
+        high = bound1
+        low = bound2
+    
+    if value >= low and value <= high:
+        return True
+    else: 
+        return False
+    
+    
+def isInBounds(vector:Vector2D,bound1:Vector2D,bound2:Vector2D):
+    return isBetween(vector.x,bound1.x,bound2.x) and isBetween(vector.y,bound1.y,bound2.y)

@@ -142,6 +142,26 @@ def solveCollision(object1:PhysicsObject, object2:PhysicsObject,efficiency:float
     else:
         object1.setPosition(p2-((object2.radius + object1.radius)*normalUnit))
 
+class ImmovableLine:
+    def __init__(self,p1:Vector2D,p2:Vector2D):
+        if p1.x <= p2.x:
+            self.start = p1
+            self.end = p2
+        else:
+            self.start = p2
+            self.end = p1
+        self.difference = self.end - self.start
+        self.display = Line(p1.point(),p2.point())
+        
+    def distanceToPoint(self,point:Vector2D):
+        return abs(self.difference.x * (point.y-self.start.y)- self.difference.y * (point.x-self.start.x))/self.difference.mod()
+
+def lineSeries(points):
+    lines = []
+    for i in range(len(points)-1):
+        lines.append(ImmovableLine(points[i],points[i+1]))
+    return lines
+
 def SimpleDragCalculator(Velocity:Vector2D,FluidDensity:float|int,radius:float|int,dragCoefficient):
     VelocityMod = Velocity.mod()
     DragMod = dragCoefficient*( ( FluidDensity * (VelocityMod ** 2) ) / 2) * (2*radius)
@@ -197,18 +217,31 @@ class universe:
                                     resultantForce += effect
                                 case "Acceleration":
                                     resultantAcceleration += effect
+                    elif isinstance(effector, ImmovableLine):
+                        actorDistance = effector.distanceToPoint(actor.position) 
+                        if actorDistance <= actor.radius:
+                            angle1 = effector.difference.arg() + Angle(90,"Deg")
+                            angle2 =effector.difference.arg() - Angle(90,"Deg")
+                            pointOfCollision1 = actor.position + Vector2D(angle1,actorDistance) 
+                            pointOfCollision2 = actor.position + Vector2D(angle2,actorDistance) 
+                            
+                            if effector.distanceToPoint(pointOfCollision1) < effector.distanceToPoint(pointOfCollision2) and isInBounds(pointOfCollision1,effector.start,effector.end):
+                                solveCollision(actor,PhysicsObject(pointOfCollision1 + Vector2D(angle1,1),1),self.collisionEfficiency,self.frictionCoefficient)
+                            elif isInBounds(pointOfCollision2,effector.start,effector.end):
+                                solveCollision(actor,PhysicsObject(pointOfCollision2 + Vector2D(angle2,1),1),self.collisionEfficiency,self.frictionCoefficient)
+                        
                 if self.airDensity != 0: resultantForce += SimpleDragCalculator(actor.velocity,self.airDensity,actor.radius,1.2)
                 
                 if self.collideWithBounds:
                     
                     if actor.position.x - self.bounds["minX"] <= actor.radius:
-                        solveCollision(actor,PhysicsObject(Vector2D(self.bounds["minX"],actor.position.y),0.00000001),self.collisionEfficiency,self.frictionCoefficient)
+                        solveCollision(actor,PhysicsObject(Vector2D(self.bounds["minX"]-1,actor.position.y),1),self.collisionEfficiency,self.frictionCoefficient)
                     elif self.bounds["maxX"] - actor.position.x <= actor.radius:
-                        solveCollision(actor,PhysicsObject(Vector2D(self.bounds["maxX"],actor.position.y),0.00000001),self.collisionEfficiency,self.frictionCoefficient)
+                        solveCollision(actor,PhysicsObject(Vector2D(self.bounds["maxX"]+1,actor.position.y),1),self.collisionEfficiency,self.frictionCoefficient)
                     if actor.position.y - self.bounds["minY"] <= actor.radius:
-                        solveCollision(actor,PhysicsObject(Vector2D(actor.position.x,self.bounds["minY"]),0.00000001),self.collisionEfficiency,self.frictionCoefficient)
+                        solveCollision(actor,PhysicsObject(Vector2D(actor.position.x,self.bounds["minY"]-1),1),self.collisionEfficiency,self.frictionCoefficient)
                     elif self.bounds["maxY"] - actor.position.y <= actor.radius:
-                        solveCollision(actor,PhysicsObject(Vector2D(actor.position.x,self.bounds["maxY"]),0.00000001),self.collisionEfficiency,self.frictionCoefficient)
+                        solveCollision(actor,PhysicsObject(Vector2D(actor.position.x,self.bounds["maxY"]+1),1),self.collisionEfficiency,self.frictionCoefficient)
                 
                 actor.tick(self.lastTime,resultantForce,resultantAcceleration)
         #IMAGE if self.frame % 3 == 0:
