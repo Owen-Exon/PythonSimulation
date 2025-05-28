@@ -46,17 +46,23 @@ class Angle:
         """
                 
         if angleType == "Deg":
-            self.Angle = angle
+            self.AngleDegDONOTCALL = angle
+            self.AngleRadDONOTCALL = None
         elif angleType == "Rad":
-            self.Angle = (angle)*180/pi
+            self.AngleDegDONOTCALL = None
+            self.AngleRadDONOTCALL = angle
     
     def degrees(self) -> float:
         """Returns the angle in degrees"""
-        return self.Angle
+        if self.AngleDegDONOTCALL == None:
+            self.AngleDegDONOTCALL = (self.AngleRadDONOTCALL)*180/pi
+        return self.AngleDegDONOTCALL
 
     def rad(self) -> float:
         """Returns the angle in rad"""
-        return (self.Angle)*pi/180
+        if self.AngleRadDONOTCALL == None:
+            self.AngleRadDONOTCALL = (self.AngleDegDONOTCALL)*pi/180
+        return self.AngleRadDONOTCALL
     
     def __str__(self):
         return f"{self.rad()} rad"
@@ -109,6 +115,10 @@ class Vector2D:
         else:
             self.x = x
             self.y = y
+        self.VectorLengthDONOTCALL = None
+        self.vectorAngleDONOTCALL = None
+        self.GraphicsPointDONOTCALL = None
+        self.VectorUnitDONOTCALL = None
     
     def __str__(self):
         return f'({self.x} , {self.y})'
@@ -119,13 +129,16 @@ class Vector2D:
     
     def mod(self) -> float:
         """Returns the length of the vector"""
-        return math.sqrt((self.x**2)+(self.y**2))
+        if self.VectorLengthDONOTCALL == None:
+            self.VectorLengthDONOTCALL = math.sqrt((self.x**2)+(self.y**2))
+        return self.VectorLengthDONOTCALL
     
     def arg(self) -> Angle:
         
         """Returns the angle of the vector from the +ve x axis"""
-        
-        return(Angle(math.atan2(self.y,self.x)))        
+        if self.vectorAngleDONOTCALL == None:
+            self.vectorAngleDONOTCALL = Angle(math.atan2(self.y,self.x))  
+        return self.vectorAngleDONOTCALL      
     
     def __add__(self,other):
         if isinstance(other, Vector2D):
@@ -155,10 +168,14 @@ class Vector2D:
             raise ValueError(MathTypeErrorText("/",self,other))
         
     def unitVector(self):
-        return self/self.mod() 
+        if self.VectorUnitDONOTCALL == None:
+            self.VectorUnitDONOTCALL = self/self.mod() 
+        return self.VectorUnitDONOTCALL
         
     def point(self):
-        return Point(self.x,self.y)
+        if self.GraphicsPointDONOTCALL == None:
+            self.GraphicsPointDONOTCALL = Point(self.x,self.y)
+        return self.GraphicsPointDONOTCALL
 
 
 
