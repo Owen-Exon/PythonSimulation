@@ -170,7 +170,7 @@ def SimpleDragCalculator(Velocity:Vector2D,FluidDensity:float|int,radius:float|i
 
 class universe:
     
-    def __init__(self,name:str,resolutionX:float|int,coordLimits:list,gravity:Vector2D,timeMultiplier:float|int=1,timeIncrement=0.1, airDensity:float|int=0,collisionEfficiency:float|int=1, collideWithBounds:bool = False, frictionCoefficient:float|int = 0.5):
+    def __init__(self,name:str,resolutionX:float|int,coordLimits:list,gravity:Vector2D,timeMultiplier:float|int=1,timeIncrement=0.1, airDensity:float|int=0,collisionEfficiency:float|int=1, collideWithBounds:bool = False, frictionCoefficient:float|int = 0):
         width = coordLimits[2] - coordLimits[0]
         height = coordLimits[3]-coordLimits[1]
         resolution = [resolutionX, (resolutionX/(width)) * (height)]
@@ -180,7 +180,7 @@ class universe:
         self.gravity = gravity
         self.actors = []
         self.frame = 0
-        self.lastTime = 0.01*timeMultiplier
+        self.lastTime = 0.001*timeMultiplier
         self.timeMultiplier = timeMultiplier
         self.timeIncrement = timeIncrement
         
@@ -267,7 +267,7 @@ class universe:
         self.graphicsWindow.close()
         
 if __name__ == "__main__":
-    World = universe("World",[1000,1000],[-10,-10,10,10],Vector2D(0,0),1,0.5)
+    World = universe("World",1000,[-10,-10,10,10],Vector2D(0,0),1,0.5)
 
     p1 = PhysicsObject(Vector2D(-5,0),.25)
     p1.setParticle(1,Vector2D(5,0))
