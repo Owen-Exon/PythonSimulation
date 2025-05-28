@@ -4,7 +4,6 @@ import time
 from random import shuffle
 
 #IMAGE imageStartTime = int(time.time())
-
 updateCheckKey = GraphWin.checkKey
 
 def noUpdateCheckKey(self):
@@ -195,6 +194,7 @@ class universe:
         self.lastTime = 0.001*timeMultiplier
         self.timeMultiplier = timeMultiplier
         self.timeIncrement = timeIncrement
+        self.timeSinceLastFrame = 0
         
         self.timeText = Text(Point((coordLimits[0]+coordLimits[2])/2,coordLimits[3]-height/80),self.timeMultiplier)
         self.timeText.draw(self.graphicsWindow)
@@ -257,8 +257,12 @@ class universe:
         #IMAGE     self.graphicsWindow.postscript(file="frames/tempImage.eps", colormode='color')
         #IMAGE     img = NewImage.open("frames/tempImage.eps")
         #IMAGE     img.save(f"frames/Time{imageStartTime}Sim{self.frame}.bmp", "bmp")
-        update()
+        # update()
+        if self.timeSinceLastFrame >= 1/(120):
+            update()
+            self.timeSinceLastFrame = 0
         self.lastTime = (time.time() - startTime) * self.timeMultiplier
+        self.timeSinceLastFrame += self.lastTime
         
     def run(self):
         self.graphicsWindow.getMouse()
