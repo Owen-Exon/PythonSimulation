@@ -260,7 +260,7 @@ class universe:
         # update()
         if self.timeSinceLastFrame >= 1/(120):
             update()
-            self.timeSinceLastFrame = 0
+            self.timeSinceLastFrame -= 1/120
         self.lastTime = (time.time() - startTime) * self.timeMultiplier
         self.timeSinceLastFrame += self.lastTime
         
