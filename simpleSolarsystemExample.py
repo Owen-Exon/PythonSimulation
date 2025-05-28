@@ -1,7 +1,7 @@
 from Simulation import *
 
 
-MainUniverse = universe("Test",[1000,1000],[-180000,-180000,180000,180000],Vector2D(0,0),1000,2000)
+MainUniverse = universe("Test",1000,[-180000,-180000,180000,180000],Vector2D(0,0),1000,100)
 
 
 sun = PhysicsObject(Vector2D(0,0),10000,{"Fill":color_rgb(255,255,0)})

@@ -1,6 +1,6 @@
 from Simulation import *
 
-World = universe("World",[1000,1000],[-10,-5,10,15],Vector2D(0,0),.5,0.1,0.009,.9,False,0.3)
+World = universe("World",1000,[-10,-5,10,15],Vector2D(0,0),.5,0.1,0.009,.9,False,0.3)
 
 e1 = PhysicsObject(Vector2D(0,5),1,{"Line":color_rgb(255,0,0)})
 e1.setRadialForce(10,5)

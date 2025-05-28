@@ -170,7 +170,10 @@ def SimpleDragCalculator(Velocity:Vector2D,FluidDensity:float|int,radius:float|i
 
 class universe:
     
-    def __init__(self,name:str,resolution:list,coordLimits:list,gravity:Vector2D,timeMultiplier:float|int,slowTimeMultiplier=None, airDensity:float|int=0,collisionEfficiency:float|int=1, collideWithBounds:bool = False, frictionCoefficient:float|int = 0.5):
+    def __init__(self,name:str,resolutionX:float|int,coordLimits:list,gravity:Vector2D,timeMultiplier:float|int=1,timeIncrement=0.1, airDensity:float|int=0,collisionEfficiency:float|int=1, collideWithBounds:bool = False, frictionCoefficient:float|int = 0.5):
+        width = coordLimits[2] - coordLimits[0]
+        height = coordLimits[3]-coordLimits[1]
+        resolution = [resolutionX, (resolutionX/(width)) * (height)]
         self.graphicsWindow = GraphWin(name,*resolution,autoflush=False)
         self.graphicsWindow.setCoords(*coordLimits)
 
@@ -179,7 +182,11 @@ class universe:
         self.frame = 0
         self.lastTime = 0.01*timeMultiplier
         self.timeMultiplier = timeMultiplier
-        self.otherTimeMultiplier = slowTimeMultiplier
+        self.timeIncrement = timeIncrement
+        
+        self.timeText = Text(Point((coordLimits[0]+coordLimits[2])/2,coordLimits[3]-height/80),self.timeMultiplier)
+        self.timeText.draw(self.graphicsWindow)
+        
         self.airDensity = airDensity
         self.collisionEfficiency = collisionEfficiency
         self.frictionCoefficient = frictionCoefficient
@@ -246,11 +253,17 @@ class universe:
         done = False
         while not done:
             self.tick()
-            if self.graphicsWindow.checkMouse(): done = True
-            if self.graphicsWindow.checkKey() == "s" and self.otherTimeMultiplier != None:
-                tempTime = self.timeMultiplier
-                self.timeMultiplier = self.otherTimeMultiplier
-                self.otherTimeMultiplier = tempTime
+            keyStroke = self.graphicsWindow.checkKey()
+            if keyStroke == "Escape" : done = True
+            elif keyStroke == "Up" : 
+                self.timeMultiplier += self.timeIncrement
+                self.timeText.setText(self.timeMultiplier)
+            elif keyStroke == "Down" : 
+                self.timeMultiplier = max(self.timeMultiplier - self.timeIncrement,self.timeIncrement)
+                self.timeText.setText(self.timeMultiplier)
+            elif keyStroke == "p" : 
+                while self.graphicsWindow.getKey() != "p": pass
+        
         self.graphicsWindow.close()
         
 if __name__ == "__main__":

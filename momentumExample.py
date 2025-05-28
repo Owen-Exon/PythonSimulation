@@ -1,6 +1,6 @@
 from Simulation import *
 
-World = universe("World",[1000,1000],[-10,-10,10,10],Vector2D(0,0),1,0.5)
+World = universe("World",1000,[-10,-10,10,10],Vector2D(0,0),1,0.1)
 
 points = []
 p1 = PhysicsObject(Vector2D(-5,0),.25)
