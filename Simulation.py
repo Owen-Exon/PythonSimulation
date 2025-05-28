@@ -191,7 +191,7 @@ class universe:
         self.gravity = gravity
         self.actors = []
         self.frame = 0
-        self.lastTime = 0.001*timeMultiplier
+        self.adjustedLastTime = 0.001*timeMultiplier
         self.timeMultiplier = timeMultiplier
         self.timeIncrement = timeIncrement
         self.timeSinceLastFrame = 0
@@ -252,7 +252,7 @@ class universe:
                                 solveCollision(actor,PhysicsObject(pointOfCollision2 + Vector2D(angle2,1),1),self.collisionEfficiency,self.frictionCoefficient)
                         
                 if self.airDensity != 0: resultantForce += SimpleDragCalculator(actor.velocity,self.airDensity,actor.radius,1.2)
-                actor.tick(self.lastTime,resultantForce,resultantAcceleration)
+                actor.tick(self.adjustedLastTime,resultantForce,resultantAcceleration)
         #IMAGE if self.frame % 3 == 0:
         #IMAGE     self.graphicsWindow.postscript(file="frames/tempImage.eps", colormode='color')
         #IMAGE     img = NewImage.open("frames/tempImage.eps")
@@ -261,8 +261,20 @@ class universe:
         if self.timeSinceLastFrame >= 1/(120):
             update()
             self.timeSinceLastFrame -= 1/120
-        self.lastTime = (time.time() - startTime) * self.timeMultiplier
-        self.timeSinceLastFrame += self.lastTime
+        realTimeDifference = (time.time() - startTime)
+        self.timeSinceLastFrame += realTimeDifference
+        self.adjustedLastTime = realTimeDifference * self.timeMultiplier
+        
+    def updateTimeText(self):
+        self.timeText.setText(self.timeMultiplier)
+    
+    def increaseTimeMultiplier(self):
+        self.timeMultiplier += self.timeIncrement
+        self.updateTimeText()
+
+    def decreaseTimeMultiplier(self):
+        self.timeMultiplier = max(self.timeMultiplier - self.timeIncrement,self.timeIncrement)
+        self.updateTimeText()
         
     def run(self):
         self.graphicsWindow.getMouse()
@@ -271,14 +283,15 @@ class universe:
             self.tick()
             keyStroke = self.graphicsWindow.checkKey()
             if keyStroke == "Escape" : done = True
-            elif keyStroke == "Up" : 
-                self.timeMultiplier += self.timeIncrement
-                self.timeText.setText(self.timeMultiplier)
-            elif keyStroke == "Down" : 
-                self.timeMultiplier = max(self.timeMultiplier - self.timeIncrement,self.timeIncrement)
-                self.timeText.setText(self.timeMultiplier)
+            elif keyStroke == "Up" : self.increaseTimeMultiplier()
+            elif keyStroke == "Down" : self.decreaseTimeMultiplier()
             elif keyStroke == "p" : 
-                while self.graphicsWindow.getKey() != "p": pass
+                pausedKeyStroke = self.graphicsWindow.getKey()
+                while pausedKeyStroke != "p":
+                    if keyStroke == "Escape" : done = True
+                    elif pausedKeyStroke == "Up" : self.increaseTimeMultiplier()
+                    elif pausedKeyStroke == "Down" : self.decreaseTimeMultiplier()
+                    pausedKeyStroke = self.graphicsWindow.getKey()
         
         self.graphicsWindow.close()
         
