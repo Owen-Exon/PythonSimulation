@@ -128,18 +128,25 @@ def solveCollision(object1:PhysicsObject, object2:PhysicsObject,efficiency:float
     v1Tangent = dotProduct(v1,tangentUnit)
     v2Tangent = dotProduct(v2,tangentUnit)
     
-    v1NormalDash = (v1Normal * (m1 - efficiency * m2) + (efficiency + 1) * m2 * v2Normal) / (m1 + m2)
-    v2NormalDash = (v2Normal * (m2 - efficiency * m1) + (efficiency + 1) * m1 * v1Normal) / (m1 + m2)
+    if efficiency != 1 :
+        v1NormalDash = (v1Normal * (m1 - efficiency * m2) + (efficiency + 1) * m2 * v2Normal) / (m1 + m2)
+        v2NormalDash = (v2Normal * (m2 - efficiency * m1) + (efficiency + 1) * m1 * v1Normal) / (m1 + m2)
+    else :
+        v1NormalDash = (v1Normal * (m1 - m2) + 2 * m2 * v2Normal) / (m1 + m2)
+        v2NormalDash = (v2Normal * (m2 - m1) + 2 * m1 * v1Normal) / (m1 + m2)
+
+    if frictionCoefficient != 0:
+        vRelT = v1Tangent - v2Tangent
+        sumInverseMass = (1/m1) + (1/m2)
+        effectiveMass = 1/sumInverseMass
+        Jn = (-1 * (1 + efficiency) * (vRelT))/(sumInverseMass)
+        Jt = -1 * min(frictionCoefficient * abs(Jn),effectiveMass) * sign(vRelT)
     
-    vRelT = v1Tangent - v2Tangent
-    sumInverseMass = (1/m1) + (1/m2)
-    effectiveMass = 1/sumInverseMass
-    Jn = (-1 * (1 + efficiency) * (vRelT))/(sumInverseMass)
-    Jt = -1 * min(frictionCoefficient * abs(Jn),effectiveMass) * sign(vRelT)
-    
-    
-    v1TangentDash = v1Tangent + (Jt / m1)
-    v2TangentDash = v2Tangent - (Jt / m2)
+        v1TangentDash = v1Tangent + (Jt / m1)
+        v2TangentDash = v2Tangent - (Jt / m2)
+    else:
+        v1TangentDash = v1Tangent
+        v2TangentDash = v2Tangent
     
     v1Dash = v1NormalDash * normalUnit + v1TangentDash * tangentUnit
     v2Dash = v2NormalDash * normalUnit + v2TangentDash * tangentUnit
