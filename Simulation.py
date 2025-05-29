@@ -242,7 +242,7 @@ class universe:
                         actorDistance = effector.distanceToPoint(actor.position) 
                         if actorDistance <= actor.radius:
                             angle1 = effector.difference.arg() + Angle(90,"Deg")
-                            angle2 =effector.difference.arg() - Angle(90,"Deg")
+                            angle2 = effector.difference.arg() - Angle(90,"Deg")
                             pointOfCollision1 = actor.position + Vector2D(angle1,actorDistance) 
                             pointOfCollision2 = actor.position + Vector2D(angle2,actorDistance) 
                             
@@ -286,12 +286,13 @@ class universe:
             elif keyStroke == "Up" : self.increaseTimeMultiplier()
             elif keyStroke == "Down" : self.decreaseTimeMultiplier()
             elif keyStroke == "p" : 
-                pausedKeyStroke = self.graphicsWindow.getKey()
-                while pausedKeyStroke != "p":
-                    if keyStroke == "Escape" : done = True
+                pausedKeyStroke = ""
+                while pausedKeyStroke != "p" and not done:
+                    pausedKeyStroke = self.graphicsWindow.getKey()
+                    if pausedKeyStroke == "Escape" : done = True
                     elif pausedKeyStroke == "Up" : self.increaseTimeMultiplier()
                     elif pausedKeyStroke == "Down" : self.decreaseTimeMultiplier()
-                    pausedKeyStroke = self.graphicsWindow.getKey()
+                     
         
         self.graphicsWindow.close()
         
