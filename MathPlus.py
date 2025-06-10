@@ -119,6 +119,7 @@ class Vector2D:
         self.vectorAngleDONOTCALL = None
         self.GraphicsPointDONOTCALL = None
         self.VectorUnitDONOTCALL = None
+        self.normalDONOTCALL = None
     
     def __str__(self):
         return f'({self.x} , {self.y})'
@@ -176,6 +177,11 @@ class Vector2D:
         if self.GraphicsPointDONOTCALL == None:
             self.GraphicsPointDONOTCALL = Point(self.x,self.y)
         return self.GraphicsPointDONOTCALL
+    
+    def normal(self):
+        if self.normalDONOTCALL == None:
+            self.normalDONOTCALL = Vector2D(self.y * -1, self.x)
+        return self.normalDONOTCALL
 
 
 
