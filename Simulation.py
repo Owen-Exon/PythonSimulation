@@ -2,6 +2,7 @@ from MathPlus import *
 #IMAGE from PIL import Image as NewImage
 import time
 from random import shuffle
+from line_profiler import *
 
 #IMAGE imageStartTime = int(time.time())
 updateCheckKey = GraphWin.checkKey
@@ -250,6 +251,7 @@ class universe:
             self.actors.append(actor)
             actor.draw(self.graphicsWindow)
     
+    @profile
     def tick(self):
         startTime = time.time()
         self.frame += 1
