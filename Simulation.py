@@ -85,11 +85,11 @@ class PhysicsObject:
         acceleration += resultantForce / self.mass
         self.velocity += tickTime * acceleration
         dPosition = tickTime * self.velocity
+        self.move(dPosition)
         self.rotation += tickTime * Angle(self.angularVelocity)
         self.displayLine.undraw()
         self.displayLine = Line(self.position.point(),(self.position + Vector2D(self.rotation,self.radius)).point())
         self.displayLine.setOutline(color_rgb(255,255,255))
-        self.move(dPosition)
         
     
     def setPosition(self, vector:Vector2D):
