@@ -221,7 +221,7 @@ def SimpleDragCalculator(Velocity:Vector2D,FluidDensity:float|int,radius:float|i
 
 class universe:
     
-    def __init__(self,name:str,resolutionX:float|int,coordLimits:list,gravity:Vector2D,timeMultiplier:float|int=1,timeIncrement=0.1, airDensity:float|int=0,collisionEfficiency:float|int=1, collideWithBounds:bool = False, frictionCoefficient:float|int = 0):
+    def __init__(self,name:str,resolutionX:float|int,coordLimits:list,gravity:Vector2D,timeMultiplier:float|int=1,timeIncrement=0.1, airDensity:float|int=0,collisionEfficiency:float|int=1, collideWithBounds:bool = False, frictionCoefficient:float|int = 0,framerate:int = 120):
         width = coordLimits[2] - coordLimits[0]
         height = coordLimits[3]-coordLimits[1]
         resolution = [resolutionX, (resolutionX/(width)) * (height)]
@@ -235,6 +235,7 @@ class universe:
         self.timeMultiplier = timeMultiplier
         self.timeIncrement = timeIncrement
         self.timeSinceLastFrame = 0
+        self.framerate = framerate
         
         self.timeText = Text(Point((coordLimits[0]+coordLimits[2])/2,coordLimits[3]-height/80),self.timeMultiplier)
         self.timeText.draw(self.graphicsWindow)
@@ -300,9 +301,9 @@ class universe:
         #IMAGE     img = NewImage.open("frames/tempImage.eps")
         #IMAGE     img.save(f"frames/Time{imageStartTime}Sim{self.frame}.bmp", "bmp")
         # update()
-        if self.timeSinceLastFrame >= 1/(120):
+        if self.timeSinceLastFrame >= 1/self.framerate:
             update()
-            self.timeSinceLastFrame -= 1/120
+            self.timeSinceLastFrame -= 1/self.framerate
         realTimeDifference = (time.time() - startTime)
         self.timeSinceLastFrame += realTimeDifference
         self.adjustedLastTime = realTimeDifference * self.timeMultiplier
