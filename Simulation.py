@@ -235,7 +235,7 @@ class universe:
         self.timeMultiplier = timeMultiplier
         self.timeIncrement = timeIncrement
         self.timeSinceLastFrame = 0
-        self.framerate = framerate
+        self.frameTime = 1/framerate
         
         self.timeText = Text(Point((coordLimits[0]+coordLimits[2])/2,coordLimits[3]-height/80),self.timeMultiplier)
         self.timeText.draw(self.graphicsWindow)
@@ -301,9 +301,10 @@ class universe:
         #IMAGE     img = NewImage.open("frames/tempImage.eps")
         #IMAGE     img.save(f"frames/Time{imageStartTime}Sim{self.frame}.bmp", "bmp")
         # update()
-        if self.timeSinceLastFrame >= 1/self.framerate:
+        print(round(10000*self.timeSinceLastFrame,2))
+        if self.timeSinceLastFrame >= self.frameTime:
             update()
-            self.timeSinceLastFrame -= 1/self.framerate
+            self.timeSinceLastFrame -= (self.timeSinceLastFrame % self.frameTime) * self.frameTime
         realTimeDifference = (time.time() - startTime)
         self.timeSinceLastFrame += realTimeDifference
         self.adjustedLastTime = realTimeDifference * self.timeMultiplier
