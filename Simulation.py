@@ -85,9 +85,6 @@ class PhysicsObject:
 def isInForceRegion(object,forceRegion) -> bool:
     return distanceBetween2Vector2D(object.position,forceRegion.position) <= forceRegion.forceRadius
 
-def dotProduct(a:Vector2D,b:Vector2D):
-    return (a.x * b.x) + (a.y * b.y)
-
 def solveCollision(object1:PhysicsObject, object2:PhysicsObject,coefficientOfRestitution:float|int, coefficientOfFriction:float|int):
     if not object1.isMovable:
         obTemp = object1
