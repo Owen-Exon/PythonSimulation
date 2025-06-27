@@ -182,7 +182,7 @@ class ImmovableLine:
     def draw(self,graphicsWindow:GraphWin):
         self.display.draw(graphicsWindow)
 
-def lineSeries(points):
+def lineSeries(*points):
     lines = []
     for i in range(len(points)-1):
         lines.append(ImmovableLine(points[i],points[i+1]))
@@ -220,7 +220,7 @@ class universe:
         self.frictionCoefficient = frictionCoefficient
         
         if collideWithBounds:
-            self.addObjects(*lineSeries([Vector2D(coordLimits[0],coordLimits[1]),Vector2D(coordLimits[2],coordLimits[1]),Vector2D(coordLimits[2],coordLimits[3]),Vector2D(coordLimits[0],coordLimits[3]),Vector2D(coordLimits[0],coordLimits[1])]))
+            self.addObjects(*lineSeries(Vector2D(coordLimits[0],coordLimits[1]),Vector2D(coordLimits[2],coordLimits[1]),Vector2D(coordLimits[2],coordLimits[3]),Vector2D(coordLimits[0],coordLimits[3]),Vector2D(coordLimits[0],coordLimits[1])))
     
     def addObjects(self,*actors):
         for actor in actors:
