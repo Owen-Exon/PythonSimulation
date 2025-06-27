@@ -79,7 +79,8 @@ class PhysicsObject:
         
     def draw(self, graphicsWindow:GraphWin):
         self.display.draw(graphicsWindow)
-        self.rotationDisplayLine.draw(graphicsWindow)
+        if self.isMovable:
+            self.rotationDisplayLine.draw(graphicsWindow)
     
 def isInForceRegion(object,forceRegion) -> bool:
     return distanceBetween2Vector2D(object.position,forceRegion.position) <= forceRegion.forceRadius
