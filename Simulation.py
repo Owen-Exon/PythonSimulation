@@ -17,29 +17,6 @@ def noUpdateCheckKey(self):
 
 GraphWin.checkKey = noUpdateCheckKey
 
-class graphicArrow():
-    
-    def __init__(self, position:Vector2D,direction:Vector2D):
-        endPoint = position+direction
-        argument = direction.arg()
-        arrowBody = Line(position.point(),endPoint.point())
-        arrowL = Line(endPoint.point(),(endPoint + Vector2D(Angle(160,"Deg")+argument,0.5)).point())
-        arrowR = Line(endPoint.point(),(endPoint + Vector2D(Angle(-160,"Deg")+argument,0.5)).point())
-        
-        self.arrowBody = arrowBody
-        self.arrowL = arrowL
-        self.arrowR = arrowR
-    
-    def draw(self,win):
-        self.arrowBody.draw(win)
-        self.arrowL.draw(win)
-        self.arrowR.draw(win)
-        
-    def undraw(self):
-        self.arrowBody.undraw()
-        self.arrowL.undraw()
-        self.arrowR.undraw()
-
 def generateDisplay(position:Vector2D,radius:float|int,configs:dict):
     tempCircle = Circle(position.point(),radius)
     for item in configs:
@@ -59,8 +36,6 @@ class PhysicsObject:
         self.hasForce = False
         self.radius = radius
         self.display = generateDisplay(position, radius, display)
-        self.displayLine = Line(position.point(),(position + Vector2D(Angle(0),radius)).point())
-        self.displayLine.setOutline(color_rgb(255,255,255))
         self.isPermeable = isPermeable
     
     def setParticle(self, mass:int|float, initialVelocity:Vector2D,angularVelocity:float|int = 0):
@@ -69,6 +44,8 @@ class PhysicsObject:
         self.velocity = initialVelocity
         self.angularVelocity = angularVelocity
         self.rotation = Angle(0)
+        self.rotationDisplayLine = Line(self.position.point(),(self.position + Vector2D(Angle(0),self.radius)).point())
+        self.rotationDisplayLine.setOutline(color_rgb(255,255,255))
         
     def setRadialForce(self, strength:float|int, atDistance:float|int, forceType:str="Acceleration"):
         self.hasForce = True
@@ -87,9 +64,9 @@ class PhysicsObject:
         dPosition = tickTime * self.velocity
         self.move(dPosition)
         self.rotation += tickTime * Angle(self.angularVelocity)
-        self.displayLine.undraw()
-        self.displayLine = Line(self.position.point(),(self.position + Vector2D(self.rotation,self.radius)).point())
-        self.displayLine.setOutline(color_rgb(255,255,255))
+        self.rotationDisplayLine.undraw()
+        self.rotationDisplayLine = Line(self.position.point(),(self.position + Vector2D(self.rotation,self.radius)).point())
+        self.rotationDisplayLine.setOutline(color_rgb(255,255,255))
         
     
     def setPosition(self, vector:Vector2D):
@@ -102,7 +79,7 @@ class PhysicsObject:
         
     def draw(self, graphicsWindow:GraphWin):
         self.display.draw(graphicsWindow)
-        self.displayLine.draw(graphicsWindow)
+        self.rotationDisplayLine.draw(graphicsWindow)
     
 def isInForceRegion(object,forceRegion) -> bool:
     return distanceBetween2Vector2D(object.position,forceRegion.position) <= forceRegion.forceRadius
@@ -295,7 +272,7 @@ class universe:
                         
                 if self.airDensity != 0: resultantForce += SimpleDragCalculator(actor.velocity,self.airDensity,actor.radius,1.2)
                 actor.tick(self.adjustedLastTime,resultantForce,resultantAcceleration)
-                actor.displayLine.draw(self.graphicsWindow)
+                actor.rotationDisplayLine.draw(self.graphicsWindow)
         #IMAGE if self.frame % 3 == 0:
         #IMAGE     self.graphicsWindow.postscript(file="frames/tempImage.eps", colormode='color')
         #IMAGE     img = NewImage.open("frames/tempImage.eps")
