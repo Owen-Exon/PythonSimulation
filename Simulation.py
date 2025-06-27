@@ -301,10 +301,9 @@ class universe:
         #IMAGE     img = NewImage.open("frames/tempImage.eps")
         #IMAGE     img.save(f"frames/Time{imageStartTime}Sim{self.frame}.bmp", "bmp")
         # update()
-        print(round(10000*self.timeSinceLastFrame,2))
         if self.timeSinceLastFrame >= self.frameTime:
             update()
-            self.timeSinceLastFrame -= (self.timeSinceLastFrame % self.frameTime) * self.frameTime
+            self.timeSinceLastFrame = (self.timeSinceLastFrame % self.frameTime)
         realTimeDifference = (time.time() - startTime)
         self.timeSinceLastFrame += realTimeDifference
         self.adjustedLastTime = realTimeDifference * self.timeMultiplier
