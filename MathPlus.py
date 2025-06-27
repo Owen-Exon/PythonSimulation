@@ -191,9 +191,6 @@ def dotProduct(v1:Vector2D,v2:Vector2D) -> float|int:
     else:
         raise ValueError("Dot product must be done on two vectors")
 
-def dotProduct(a:Vector2D,b:Vector2D):
-    return (a.x * b.x) + (a.y * b.y)
-
 def distanceBetween2Vector2D(v1:Vector2D,v2:Vector2D) -> float|int:
     if isinstance(v1,Vector2D) & isinstance(v2,Vector2D):
         return (v2 - v1).mod()
