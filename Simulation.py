@@ -1,10 +1,8 @@
 from MathPlus import *
-#IMAGE from PIL import Image as NewImage
 import time
 from random import shuffle
 from line_profiler import *
 
-#IMAGE imageStartTime = int(time.time())
 updateCheckKey = GraphWin.checkKey
 
 def noUpdateCheckKey(self):
@@ -271,11 +269,6 @@ class universe:
                 if self.airDensity != 0: resultantForce += SimpleDragCalculator(actor.velocity,self.airDensity,actor.radius,1.2)
                 actor.tick(self.adjustedLastTime,resultantForce,resultantAcceleration)
                 actor.rotationDisplayLine.draw(self.graphicsWindow)
-        #IMAGE if self.frame % 3 == 0:
-        #IMAGE     self.graphicsWindow.postscript(file="frames/tempImage.eps", colormode='color')
-        #IMAGE     img = NewImage.open("frames/tempImage.eps")
-        #IMAGE     img.save(f"frames/Time{imageStartTime}Sim{self.frame}.bmp", "bmp")
-        # update()
         if self.timeSinceLastFrame >= self.frameTime:
             update()
             self.timeSinceLastFrame = (self.timeSinceLastFrame % self.frameTime)
